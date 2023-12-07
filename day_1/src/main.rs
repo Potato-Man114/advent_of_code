@@ -1,13 +1,13 @@
-use std::collections::HashMap;
 use std::env;
 use std::fs;
 use std::process::exit;
 use std::str::Split;
 
 
-fn get_calibration_value(values: Split<'_, &str>, matches: HashMap<String, u32>) -> u32 {
+fn get_calibration_value(values: Vec<String>) -> u32 {
     let mut sum: u32 = 0;
     for value in values {
+
         let left = match value.find(|x: char| x.is_ascii_digit()) {
             None => "",
             Some(i) => &value[i..i+1]
@@ -25,25 +25,46 @@ fn get_calibration_value(values: Split<'_, &str>, matches: HashMap<String, u32>)
     sum
 }
 
-fn get_matches() -> HashMap<String, u32> {
-    let mut matches: HashMap<String, u32> = HashMap::new();
+fn get_modifications() -> Vec<(&'static str, &'static str)> {
+    let mut modifications: Vec<(&'static str, &'static str)> = Vec::new();
 
-    matches.insert("0".to_string(), 0);
-    matches.insert("1".to_string(), 1);
-    matches.insert("2".to_string(), 2);
-    matches.insert("3".to_string(), 3);
-    matches.insert("4".to_string(), 4);
-    matches.insert("5".to_string(), 5);
-    matches.insert("6".to_string(), 6);
-    matches.insert("7".to_string(), 7);
-    matches.insert("8".to_string(), 8);
-    matches.insert("9".to_string(), 9);
-    // matches.insert("1", 1);
-    // matches.insert("1", 1);
-    // matches.insert("1", 1);
+    // modifications.insert("zero", "0");
+    modifications.push(("one", "o1e"));
+    modifications.push(("two", "t2o"));
+    modifications.push(("three", "t3e"));
+    modifications.push(("four", "f4r"));
+    modifications.push(("five", "f5e"));
+    modifications.push(("six", "s6x"));
+    modifications.push(("seven", "s7n"));
+    modifications.push(("eight", "e8t"));
+    modifications.push(("nine", "n9e"));
+    modifications.push(("1", "1"));
+    modifications.push(("2", "2"));
+    modifications.push(("3", "3"));
+    modifications.push(("4", "4"));
+    modifications.push(("5", "5"));
+    modifications.push(("6", "6"));
+    modifications.push(("7", "7"));
+    modifications.push(("8", "8"));
+    modifications.push(("9", "9"));
 
-    matches
+    modifications
 }
+
+fn modify_puzzle_input(original_values: Split<'_, &str>, modifications: &Vec<(&'static str, &'static str)>) -> Vec<String> {
+    let mut modified: Vec<String> = Vec::new();
+
+    for value in original_values {
+        let mut single_modified_value = value.clone().to_string();
+        for modification in modifications.into_iter() {
+            single_modified_value = single_modified_value.replace(modification.0, modification.1);
+        }
+        modified.push(single_modified_value.to_string());
+    }
+
+    modified
+}
+
 
 fn main() {
     
@@ -55,8 +76,9 @@ fn main() {
     let filename = &args[1];
     
     let file_contents = fs::read_to_string(filename).expect("Could not read provided filepath.");
-    
-    let calibration_value = get_calibration_value(file_contents.split("\n"), get_matches());
+    let modified_values = modify_puzzle_input(file_contents.split("\n"), &get_modifications());
+    dbg!(&modified_values);
+    let calibration_value = get_calibration_value(modified_values);
 
     println!("{}", calibration_value);
 
