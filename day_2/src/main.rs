@@ -14,10 +14,27 @@ struct Round {
     blue_count: u32,
 }
 
+impl Round {
+    fn is_possible(&self, maximums: &Round) -> bool {
+        self.red_count <= maximums.red_count && self.blue_count <= maximums.blue_count && self.green_count <= maximums.green_count
+    }
+}
+
 #[derive(Debug)]
 struct Game {
     id: u32,
     rounds: Vec<Round>
+}
+
+impl Game {
+    fn is_possible(&self, maximums: &Round) -> bool {
+        for round in &self.rounds {
+            if !round.is_possible(maximums) {
+                return false;
+            }
+        }
+        true
+    }
 }
 
 fn read_one_game(line: &str) -> Game {
@@ -42,7 +59,6 @@ fn read_one_game(line: &str) -> Game {
             blue_count: 0
         };
         for count in portion.trim().split(",") {
-            dbg!(count);
             match count.trim().split_once(" ") {
                 None => (),
                 Some(i) => match &(i.1.trim().to_lowercase()[..]) {
@@ -73,6 +89,17 @@ fn read_games_from_file(filename: &str) -> Vec<Game> {
     games
 }
 
+fn find_possible_games(games: Vec<Game>, max_counts: Round) -> Vec<Game> {
+    let mut possible_games: Vec<Game> = Vec::new();
+
+    for game in games {
+        if game.is_possible(&max_counts) {
+            possible_games.push(game);
+        }
+    }
+    possible_games
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
@@ -80,6 +107,17 @@ fn main() {
     }
     let input_filename = &args[1];
     let games: Vec<Game> = read_games_from_file(&input_filename);
+    let max_counts = Round {
+        red_count: MAX_RED_COUNT,
+        green_count: MAX_GREEN_COUNT,
+        blue_count: MAX_BLUE_COUNT
+    };
+    let possible_games: Vec<Game> = find_possible_games(games, max_counts);
 
-    dbg!(games);
+    let mut sum = 0;
+    for game in possible_games {
+        sum += game.id;
+    }
+
+    dbg!(sum);
 }
