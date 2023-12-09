@@ -7,6 +7,12 @@ const MAX_RED_COUNT: u32 = 12;
 const MAX_GREEN_COUNT: u32 = 13;
 const MAX_BLUE_COUNT: u32 = 14;
 
+macro_rules! ternary {
+    ($test:expr => $true_expr:expr; $false_expr:expr) => {
+        if $test { $true_expr } else { $false_expr }
+    };
+}
+
 #[derive(Debug)]
 struct Round {
     red_count: u32,
@@ -17,6 +23,10 @@ struct Round {
 impl Round {
     fn is_possible(&self, maximums: &Round) -> bool {
         self.red_count <= maximums.red_count && self.blue_count <= maximums.blue_count && self.green_count <= maximums.green_count
+    }
+
+    fn power(&self) -> u32 {
+        self.red_count * self.blue_count * self.green_count
     }
 }
 
@@ -34,6 +44,24 @@ impl Game {
             }
         }
         true
+    }
+
+    fn fewest_possible(&self) -> Round {
+        let mut least = Round {
+            red_count: 0,
+            green_count: 0,
+            blue_count: 0
+        };
+
+        for round in &self.rounds {
+            least.red_count = ternary!(round.red_count > least.red_count => round.red_count; least.red_count);
+            least.blue_count = ternary!(round.blue_count > least.blue_count => round.blue_count; least.blue_count);
+            least.green_count = ternary!(round.green_count > least.green_count => round.green_count; least.green_count);
+
+        }
+
+
+        least
     }
 }
 
@@ -100,6 +128,14 @@ fn find_possible_games(games: Vec<Game>, max_counts: Round) -> Vec<Game> {
     possible_games
 }
 
+fn get_all_fewest(games: Vec<Game>) -> Vec<Round> {
+    let mut fewest: Vec<Round> = Vec::new();
+    for game in games {
+        fewest.push(game.fewest_possible());
+    }
+    fewest
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
@@ -107,17 +143,26 @@ fn main() {
     }
     let input_filename = &args[1];
     let games: Vec<Game> = read_games_from_file(&input_filename);
-    let max_counts = Round {
-        red_count: MAX_RED_COUNT,
-        green_count: MAX_GREEN_COUNT,
-        blue_count: MAX_BLUE_COUNT
-    };
-    let possible_games: Vec<Game> = find_possible_games(games, max_counts);
+    // let max_counts = Round {
+    //     red_count: MAX_RED_COUNT,
+    //     green_count: MAX_GREEN_COUNT,
+    //     blue_count: MAX_BLUE_COUNT
+    // };
+    // let possible_games: Vec<Game> = find_possible_games(games, max_counts);
+    // let mut sum = 0;
+    // for game in possible_games {
+    //     sum += game.id;
+    // }
+    // dbg!(sum);
+
+    let fewest_possible_cubes: Vec<Round> = get_all_fewest(games);
 
     let mut sum = 0;
-    for game in possible_games {
-        sum += game.id;
+    for round in fewest_possible_cubes {
+        sum += round.power();
     }
 
     dbg!(sum);
+
+
 }
