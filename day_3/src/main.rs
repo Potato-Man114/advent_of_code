@@ -18,7 +18,7 @@ fn split_contents_2d(file_contents: String) -> Vec<String> {
 }
 
 fn single_adjacent_to_symbol(characters: &Vec<String>, position: (usize, usize)) -> bool {
-    const NOT_SYMBOLS: [char; 10] = ['.', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+    const NOT_SYMBOLS: [char; 11] = ['.', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
     //basic sanity checks
     if position.0 >= characters.len() || position.1 >= characters[position.0].len() {
         return false;
@@ -67,13 +67,10 @@ fn single_adjacent_to_symbol(characters: &Vec<String>, position: (usize, usize))
             return true;
         }
     }
-
     false
 }
 
 fn adjacent_to_symbol(characters: &Vec<String>, number: &(String, usize, usize, usize)) -> bool {
-    let mut adjacent_coordinates: Vec<(usize, usize)> = Vec::new();
-
     let line = number.1;
     let start_col = number.2;
     let end_col = number.3;
@@ -98,11 +95,13 @@ fn get_numbers_adjacent_symbols(characters: Vec<String>) -> Vec<u32> {
             let digit = m.next().unwrap();
             if working.is_some() {
                 let unwrapped = working.unwrap();
-                if unwrapped.2 > digit.0 + 1 {
+                if digit.0 > unwrapped.3 + 1 {
                     numbers_on_line.push(unwrapped.clone());
                     working = Option::Some((digit.1.to_string(), line, digit.0, digit.0));
                 }
-                working = Option::Some((unwrapped.0.to_string() + digit.1, line, unwrapped.1, digit.0));
+                else {
+                    working = Option::Some((unwrapped.0.to_string() + digit.1, line, unwrapped.2, digit.0));
+                }
             }
             else {
                 working = Option::Some((digit.1.to_string(), line, digit.0, digit.0));
